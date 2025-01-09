@@ -2,7 +2,7 @@
   "expo": {
     "name": "task-list",
     "slug": "task-list",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -19,10 +19,21 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.gabrielschoenfelder.tasklist"
+    },
+    "androidStatusBar": {
+      "barStyle": "light-content",
+      "backgroundColor": "#000"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0172fe30-7880-4770-b67a-35e7c29ac19f"
+      }
+    },
+    "owner": "gabrielschoenfelder"
   }
 }
