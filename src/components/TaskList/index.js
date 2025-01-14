@@ -13,7 +13,7 @@ export default function TaskList( {data, handleDelete} ){
                 <Text style={styles.tasks}>{data.task}</Text>
             </View>
         </Animatable.View>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
