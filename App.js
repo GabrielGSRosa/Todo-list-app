@@ -23,6 +23,7 @@ export default function App() {
   const [taskMonth, setTaskMonth] = useState([])
   const [taskYear, setTaskYear] = useState([])
   const [oldTask, setOldTask] = useState([])
+  const [openTask, setOpenTask] = useState([])
   const [openToday, setOpenToday] = useState(false)
   const [openWeek, setOpenWeek] = useState(false)
   const [openMonth, setOpenMonth] = useState(false)
@@ -40,9 +41,17 @@ export default function App() {
     useEffect(() => {
       async function loadTasks() {
         const taskStorage = await AsyncStorage.getItem('@task')
+        const taskStorageToday = await AsyncStorage.getItem('@taskToday')
+        const taskStorageWeek = await AsyncStorage.getItem('@taskWeek')
+        const taskStorageMonth = await AsyncStorage.getItem('@taskMonth')
+        const taskStorageYear = await AsyncStorage.getItem('@taskYear')
 
-        if(taskStorage){
+        if(taskStorage || taskStorageToday || taskStorageWeek || taskStorageMonth || taskStorageYear){
           setTask(JSON.parse(taskStorage))
+          setTaskToday(JSON.parse(taskStorageToday))
+          setTaskWeek(JSON.parse(taskStorageWeek))
+          setTaskMonth(JSON.parse(taskStorageMonth))
+          setTaskYear(JSON.parse(taskStorageYear))
         }
       }
 
@@ -54,11 +63,15 @@ export default function App() {
     useEffect(() => {
       async function saveTasks(){
         await AsyncStorage.setItem('@task', JSON.stringify(task))
+        await AsyncStorage.setItem('@taskToday', JSON.stringify(taskToday))
+        await AsyncStorage.setItem('@taskWeek', JSON.stringify(taskWeek))
+        await AsyncStorage.setItem('@taskMonth', JSON.stringify(taskMonth))
+        await AsyncStorage.setItem('@taskYear', JSON.stringify(taskYear))
       }
 
       saveTasks()
 
-    }, [task]);
+    }, [task, taskToday, taskWeek, taskMonth, taskYear]);
 
 
     {/* Trata a adição de novas tarefas */}
@@ -91,6 +104,7 @@ export default function App() {
   }
 
   {/* Trata a exclusão das tarefas e envia para o histórico */}
+  {/* Trata a categoria 'free' */}
   const handleDelete = useCallback((data) => {
     setOldTask(prevOldTask => [...prevOldTask, {key: data.key, task: data.task}])
 
@@ -101,10 +115,55 @@ export default function App() {
 
   }, [task, oldTask]);
 
+  {/* Trata a categoria 'Today' */}
+  const handleDeleteToday = useCallback((data) => {
+    setOldTask(prevOldTask => [...prevOldTask, {key: data.key, task: data.task}])
+
+    // Filtra as tarefas e remove a tarefa concluída
+    const find = taskToday.filter(r => r.key !== data.key);
+    alert(`Tarefa: ${data.key} Concluída!`);
+    setTaskToday(find);
+
+  }, [taskToday, oldTask]);
+
+  {/* Trata a categoria 'Week' */}
+  const handleDeleteWeek = useCallback((data) => {
+    setOldTask(prevOldTask => [...prevOldTask, {key: data.key, task: data.task}])
+
+    // Filtra as tarefas e remove a tarefa concluída
+    const find = taskWeek.filter(r => r.key !== data.key);
+    alert(`Tarefa: ${data.key} Concluída!`);
+    setTaskWeek(find);
+
+  }, [taskWeek, oldTask]);
+
+  {/* Trata a categoria 'Month' */}
+  const handleDeleteMonth = useCallback((data) => {
+    setOldTask(prevOldTask => [...prevOldTask, {key: data.key, task: data.task}])
+
+    // Filtra as tarefas e remove a tarefa concluída
+    const find = taskMonth.filter(r => r.key !== data.key);
+    alert(`Tarefa: ${data.key} Concluída!`);
+    setTaskMonth(find);
+
+  }, [taskMonth, oldTask]);
+
+  {/* Trata a categoria 'Year' */}
+  const handleDeleteYear = useCallback((data) => {
+    setOldTask(prevOldTask => [...prevOldTask, {key: data.key, task: data.task}])
+
+    // Filtra as tarefas e remove a tarefa concluída
+    const find = taskYear.filter(r => r.key !== data.key);
+    alert(`Tarefa: ${data.key} Concluída!`);
+    setTaskYear(find);
+
+  }, [taskYear, oldTask]);
+
+
+
   const handleDeleteHist = useCallback((data) => {
 
     // Filtra as tarefas e remove a tarefa concluída
-    const find = task.filter(r => r.key !== data.key);
     alert(`Tarefa: ${data.key} Apagada!`);
     setOldTask((prevOldTask) => prevOldTask.filter((task) => task.key !== data.key));
 
@@ -133,6 +192,31 @@ export default function App() {
       {/* Listas */}
 
       <ScrollView>
+      {/* Free */}
+      <TouchableOpacity style={styles.childrens} onPress={() => setOpenTask(true)}>
+          <ListComponent title={"Free"} itens={task.length}/>
+        </TouchableOpacity>
+
+          <Modal animationType="slide" transparent={false} visible={openTask}>
+            <SafeAreaView style={styles.modal}>
+                <View style={styles.modalHeader}>
+                  <TouchableOpacity style={{marginLeft: 5, marginRight: 5}} onPress={() => setOpenTask(false)}>
+                    <AntDesign name="leftcircleo" size={40} color={"#fff"} />
+                  </TouchableOpacity>
+                  <Text style={styles.modalTitle}>Free</Text>
+                </View>
+
+              <FlatList 
+                marginHorizontal={10}
+                showsHorizontalScrollIndicator={false} 
+                data={task}
+                keyExtractor={ (item) => String(item.key)}
+                renderItem={ ({ item }) => <TaskList data={item}  handleDelete={handleDelete}/>}
+              />
+
+            </SafeAreaView>
+          </Modal>
+
           {/* Today */}
         <TouchableOpacity style={styles.childrens} onPress={() => setOpenToday(true)}>
           <ListComponent title={"Today"} itens={taskToday.length}/>
@@ -152,7 +236,7 @@ export default function App() {
                 showsHorizontalScrollIndicator={false} 
                 data={taskToday}
                 keyExtractor={ (item) => String(item.key)}
-                renderItem={ ({ item }) => <TaskList data={item}  handleDelete={handleDelete}/>}
+                renderItem={ ({ item }) => <TaskList data={item}  handleDelete={handleDeleteToday}/>}
               />
 
             </SafeAreaView>
@@ -177,7 +261,7 @@ export default function App() {
                 showsHorizontalScrollIndicator={false} 
                 data={taskWeek}
                 keyExtractor={ (item) => String(item.key)}
-                renderItem={ ({ item }) => <TaskList data={item}  handleDelete={handleDelete}/>}
+                renderItem={ ({ item }) => <TaskList data={item}  handleDelete={handleDeleteWeek}/>}
               />
 
             </SafeAreaView>
@@ -203,11 +287,11 @@ export default function App() {
                 showsHorizontalScrollIndicator={false} 
                 data={taskMonth}
                 keyExtractor={ (item) => String(item.key)}
-                renderItem={ ({ item }) => <TaskList data={item}  handleDelete={handleDelete}/>}
+                renderItem={ ({ item }) => <TaskList data={item}  handleDelete={handleDeleteMonth}/>}
               />
 
             </SafeAreaView>
-          </Modal>
+          </Modal> 
 
 
         {/* Year */}
@@ -229,7 +313,7 @@ export default function App() {
                 showsHorizontalScrollIndicator={false} 
                 data={taskYear}
                 keyExtractor={ (item) => String(item.key)}
-                renderItem={ ({ item }) => <TaskList data={item}  handleDelete={handleDelete}/>}
+                renderItem={ ({ item }) => <TaskList data={item}  handleDelete={handleDeleteYear}/>}
               />
 
             </SafeAreaView>
@@ -265,7 +349,7 @@ export default function App() {
             onChangeText={(texto) => setInput(texto)}
             />
             <View style={pickerSelectStyles.containerPicker}>
-              <Text style={styles.label}>Escolha uma opção:</Text>
+              <Text style={styles.label}>Choice an option:</Text>
               <RNPickerSelect
                 onValueChange={(value) => setSelectedValue(value)}
                 items={[
@@ -274,10 +358,10 @@ export default function App() {
                   { label: 'Month', value: 'Month' },
                   { label: 'Year', value: 'Year' },
                 ]}
-                placeholder={{ label: "Selecione uma opção...", value: null }}
+                placeholder={{ label: "Choice an option...", value: null }}
                 style={pickerSelectStyles}
               />
-              {selectedValue && <Text style={styles.selected}>Selecionado: {selectedValue}</Text>}
+              {selectedValue && <Text style={styles.selected}>Selected: {selectedValue}</Text>}
             </View>
             
 
